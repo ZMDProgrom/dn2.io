@@ -1,2 +1,4 @@
 # dn2.io
-[ DNS to I/O ] SCA &amp; DEV framework
+[ Domain Name to I/O ] Development DNS & SCA framework
+
+Don't push~ Developing now... :)

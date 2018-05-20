@@ -184,17 +184,17 @@ Response:
            |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
            |    |                          0x0001 (inet)                        |
            *->  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-           |    |      0xc011 (pin tag "0xc0"; fixed 17 byte from Queries)      |
+           |    |      0xc011 (pin tag "0xc0"; fixed 17 byte from Queries)      | ( = deepwn.com )
            |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-     Autherity  |                          0x0006 (SOA)                         |
+           |    |                          0x0006 (SOA)                         |
            |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
            |    |                          0x0001 (inet)                        |
            |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-           |    |                      0x0000014f (TTL: 355)                    |
+     Autherity  |                      0x0000014f (TTL: 355)                    |
            |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
            |    |                     0x0037 (RData Length: 55)                 |
            |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-           |    |            RDATA (NameServer & mail & blablabla...            |
+           |    |         RDATA (IP or CNAME or NameServer or blablabla...      |
            *->  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
     Domain Name System (response)
@@ -235,5 +235,74 @@ Response:
                 Retry Interval: 1200 (20 minutes)
                 Expire limit: 3600 (1 hour)
                 Minimum TTL: 360 (6 minutes)
+
+```
+
+If Response a domain's A ip in package, then the RDATA somes will like `RDLENGTH=4, RDATA=0x00112233`.
+
+E.g.:
+
+```text
+0000   ff 06 81 80 00 01 00 04 00 00 00 00 06 64 65 65   ÿ............dee
+0010   70 77 6e 03 63 6f 6d 00 00 01 00 01 c0 0c 00 01   pwn.com.....À...
+0020   00 01 00 00 00 23 00 04 b9 c7 6e 99 c0 0c 00 01   .....#..¹Çn.À...
+0030   00 01 00 00 00 23 00 04 b9 c7 6c 99 c0 0c 00 01   .....#..¹Çl.À...
+0040   00 01 00 00 00 23 00 04 b9 c7 6f 99 c0 0c 00 01   .....#..¹Ço.À...
+0050   00 01 00 00 00 23 00 04 b9 c7 6d 99               .....#..¹Çm.
+
+
+Domain Name System (response)
+    Transaction ID: 0xff06
+    Flags: 0x8180 Standard query response, No error
+        1... .... .... .... = Response: Message is a response
+        .000 0... .... .... = Opcode: Standard query (0)
+        .... .0.. .... .... = Authoritative: Server is not an authority for domain
+        .... ..0. .... .... = Truncated: Message is not truncated
+        .... ...1 .... .... = Recursion desired: Do query recursively
+        .... .... 1... .... = Recursion available: Server can do recursive queries
+        .... .... .0.. .... = Z: reserved (0)
+        .... .... ..0. .... = Answer authenticated: Answer/authority portion was not authenticated by the server
+        .... .... ...0 .... = Non-authenticated data: Unacceptable
+        .... .... .... 0000 = Reply code: No error (0)
+    Questions: 1
+    Answer RRs: 4
+    Authority RRs: 0
+    Additional RRs: 0
+    Queries:
+        deepwn.com: type A, class IN
+            Name: deepwn.com
+            [Name Length: 10]
+            [Label Count: 2]
+            Type: A (Host Address) (1)
+            Class: IN (0x0001)
+    Answers:
+    deepwn.com: type A, class IN, addr 185.199.110.153
+        Name: deepwn.com
+        Type: A (Host Address) (1)
+        Class: IN (0x0001)
+        Time to live: 35
+        Data length: 4
+        Address: 185.199.110.153
+    deepwn.com: type A, class IN, addr 185.199.108.153
+        Name: deepwn.com
+        Type: A (Host Address) (1)
+        Class: IN (0x0001)
+        Time to live: 35
+        Data length: 4
+        Address: 185.199.108.153
+    deepwn.com: type A, class IN, addr 185.199.111.153
+        Name: deepwn.com
+        Type: A (Host Address) (1)
+        Class: IN (0x0001)
+        Time to live: 35
+        Data length: 4
+        Address: 185.199.111.153
+    deepwn.com: type A, class IN, addr 185.199.109.153
+        Name: deepwn.com
+        Type: A (Host Address) (1)
+        Class: IN (0x0001)
+        Time to live: 35
+        Data length: 4
+        Address: 185.199.109.153
 
 ```

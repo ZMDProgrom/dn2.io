@@ -1,4 +1,6 @@
-# DNS protoal
+# DNS protocol
+
+## The UDP Package
 
 ```text
                                +--> # Header: must have a header
@@ -90,3 +92,8 @@
                                    |    TXT    |   16  |               text strings                |
                                    +-----------+-------+-------------------------------------------+
 ```
+
+## The C/S rules
+
+* If send a Request from Client, only `Header+Question(s)` in the package.
+* If send a Response from Server, will have all in package.

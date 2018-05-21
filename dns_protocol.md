@@ -14,9 +14,9 @@ last written by evil7@deepwn at 2018-05-21
                                +--> # Header: must have a header
   DNS(UDP Package)             |   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11| 12| 13| 14| 15|
 +------------------+           |   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+                                  {  QR: (1 bit) 0=REQ / 1=RES;
-|      Header      |  ---------+   |                               ID                              | --> 16bit, Auto ID from Sender   {  OPCODE: (4 bit) 0=default / 1=trackback / 2=SRVstatus / 3~15=NONE;
+|      Header      |  ---------+   |                               ID                              | --> 16 bit, Auto ID from Sender  {  OPCODE: (4 bit) 0=default / 1=trackback / 2=SRVstatus / 3~15=NONE;
 +------------------+               +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+                                  {  AA: (1 bit) Authoritative Answer (bool=0x00|0x01);
-|    Question(s)   |  ---------+   | QR|     OPCODE    | AA| TC| RD| RA|     Z     |     RCODE     | -------------------------------> {  TC: (1 bit) TrunCation (bool=0x00|0x01);
+|    Question(s)   |  ---------+   | QR|     OPCODE    | AA| TC| RD| RA|     Z     |     RCODE     | --- 16 bit --------------------> {  TC: (1 bit) TrunCation (bool=0x00|0x01);
 +------------------+           |   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+                                  {  RD: (1 bit) Recursion Desired (bool=0x00|0x01);
 |   Answer (RRs)   |  -----+   |   |                            QDCOUNT                            | --> 16 bit, RRs in Question(s)   {  RA: (1 bit) Recursion Available (bool=0x00|0x01)
 +------------------+       |   |   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+                                  {  Z: (3 bit) NONE (use 0x00,0x00,0x00)
@@ -31,7 +31,7 @@ last written by evil7@deepwn at 2018-05-21
                            |   +--> # Question(s): every one of data need include this
                            |       | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11| 12| 13| 14| 15|
                            |       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-                           |       |                                                               |     { Unkown length, length >= 1byte & end with "0x00".
+                           |       |                                                               |     { Unkown length, length >= 2byte & end with "0x00".
                            |       /                             QNAME...                          / --> { split with "." and join a length of every value at first.
                            |       /                                                               /     { E.g. (deepwn.com) => 0x06,('deepwn' to hex),0x03,('com' to hex),0x00
                            |       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
@@ -275,9 +275,23 @@ last written by evil7@deepwn at 2018-05-21
     +-----------+-------+-------------------------------------------+
 ```
 
-**A Package must & maybe only have `Header+Question(s)` in the package.**
+**A Package must & maybe only have `Header + Question(s)` in the package.**
 
 ## Example
+
+* To saving more bit in UDP package (UDP <= 512), it will re-using same bit in `Qname`. 
+
+* Pin is `0xc0` and next 2 byte is the number of moves, fixed from package start.
+
+E.g.:
+
+Qname = `deepwn.com` and Answer's name = `0xc00c`
+
+Over the Header (12 byte). And read between next byte to `0x00`.
+
+Qname = `test.deepwn.com` and Answer's name = `0xc011`
+
+Over the Header (12 byte) + `0x04` (1 byte) + test (4 byte). And read between next byte to `0x00`.
 
 Request:
 
@@ -332,7 +346,7 @@ Request:
 
 ```
 
-Response:
+Response 1:
 
 ```text
 0000   44 a5 81 83 00 01 00 00 00 01 00 00 04 74 65 73   D¥...........tes
@@ -419,9 +433,7 @@ Response:
 
 ```
 
-If Response a domain's A ip in package, then the RDATA somes will like `RDLENGTH=4, RDATA=0x00112233`.
-
-E.g.:
+Response 2:
 
 ```text
 0000   ff 06 81 80 00 01 00 04 00 00 00 00 06 64 65 65   ÿ............dee
@@ -432,59 +444,129 @@ E.g.:
 0050   00 01 00 00 00 23 00 04 b9 c7 6d 99               .....#..¹Çm.
 
 
-Domain Name System (response)
-    Transaction ID: 0xff06
-    Flags: 0x8180 Standard query response, No error
-        1... .... .... .... = Response: Message is a response
-        .000 0... .... .... = Opcode: Standard query (0)
-        .... .0.. .... .... = Authoritative: Server is not an authority for domain
-        .... ..0. .... .... = Truncated: Message is not truncated
-        .... ...1 .... .... = Recursion desired: Do query recursively
-        .... .... 1... .... = Recursion available: Server can do recursive queries
-        .... .... .0.. .... = Z: reserved (0)
-        .... .... ..0. .... = Answer authenticated: Answer/authority portion was not authenticated by the server
-        .... .... ...0 .... = Non-authenticated data: Unacceptable
-        .... .... .... 0000 = Reply code: No error (0)
-    Questions: 1
-    Answer RRs: 4
-    Authority RRs: 0
-    Additional RRs: 0
-    Queries:
-        deepwn.com: type A, class IN
+                | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11| 12| 13| 14| 15
+           *->  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                             0xff06                            |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    | 1 | 0   0   0   0 | 0 | 0 | 1 | 1 | 0   0   0 | 0   0   0   0 | ( = 0x8180 )
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+        Header  |                             0x0001                            |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                             0x0004                            |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                             0x0000                            |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                             0x0000                            |
+           *->  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    /         0x0664656570776e03636f6d00 (06deepwn03com00)          /
+           |    /                (just one 0x00 at end of name)                 /
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       Queries  |                           0x0001 (A)                          |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                          0x0001 (inet)                        |
+           *->  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |   0xc00c (pin tag "0xc0"; fixed 12 byte from package start)   | ( = deepwn.com )
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                           0x0001 (A)                          |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                          0x0001 (inet)                        |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+      Answer_1  |                      0x00000023 (TTL: 35)                     |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                     0x0004 (RData Length: 4)                  |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                   0xb9c76e99 (185.199.110.153)                |
+           *->  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |   0xc00c (pin tag "0xc0"; fixed 12 byte from package start)   | ( = deepwn.com )
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                           0x0001 (A)                          |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                          0x0001 (inet)                        |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+      Answer_2  |                      0x00000023 (TTL: 35)                     |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                     0x0004 (RData Length: 4)                  |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                   0xb9c76c99 (185.199.108.153)                |
+           *->  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |   0xc00c (pin tag "0xc0"; fixed 12 byte from package start)   | ( = deepwn.com )
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                           0x0001 (A)                          |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                          0x0001 (inet)                        |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+      Answer_3  |                      0x00000023 (TTL: 35)                     |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                     0x0004 (RData Length: 4)                  |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                   0xb9c76f99 (185.199.111.153)                |
+           *->  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |   0xc00c (pin tag "0xc0"; fixed 12 byte from package start)   | ( = deepwn.com )
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                           0x0001 (A)                          |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                          0x0001 (inet)                        |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+      Answer_4  |                      0x00000023 (TTL: 35)                     |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                     0x0004 (RData Length: 4)                  |
+           |    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+           |    |                   0xb9c76d99 (185.199.109.153)                |
+           *->  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+    Domain Name System (response)
+        Transaction ID: 0xff06
+        Flags: 0x8180 Standard query response, No error
+            1... .... .... .... = Response: Message is a response
+            .000 0... .... .... = Opcode: Standard query (0)
+            .... .0.. .... .... = Authoritative: Server is not an authority for domain
+            .... ..0. .... .... = Truncated: Message is not truncated
+            .... ...1 .... .... = Recursion desired: Do query recursively
+            .... .... 1... .... = Recursion available: Server can do recursive queries
+            .... .... .0.. .... = Z: reserved (0)
+            .... .... ..0. .... = Answer authenticated: Answer/authority portion was not authenticated by the server
+            .... .... ...0 .... = Non-authenticated data: Unacceptable
+            .... .... .... 0000 = Reply code: No error (0)
+        Questions: 1
+        Answer RRs: 4
+        Authority RRs: 0
+        Additional RRs: 0
+        Queries:
+            deepwn.com: type A, class IN
+                Name: deepwn.com
+                [Name Length: 10]
+                [Label Count: 2]
+                Type: A (Host Address) (1)
+                Class: IN (0x0001)
+        Answers:
+        deepwn.com: type A, class IN, addr 185.199.110.153
             Name: deepwn.com
-            [Name Length: 10]
-            [Label Count: 2]
             Type: A (Host Address) (1)
             Class: IN (0x0001)
-    Answers:
-    deepwn.com: type A, class IN, addr 185.199.110.153
-        Name: deepwn.com
-        Type: A (Host Address) (1)
-        Class: IN (0x0001)
-        Time to live: 35
-        Data length: 4
-        Address: 185.199.110.153
-    deepwn.com: type A, class IN, addr 185.199.108.153
-        Name: deepwn.com
-        Type: A (Host Address) (1)
-        Class: IN (0x0001)
-        Time to live: 35
-        Data length: 4
-        Address: 185.199.108.153
-    deepwn.com: type A, class IN, addr 185.199.111.153
-        Name: deepwn.com
-        Type: A (Host Address) (1)
-        Class: IN (0x0001)
-        Time to live: 35
-        Data length: 4
-        Address: 185.199.111.153
-    deepwn.com: type A, class IN, addr 185.199.109.153
-        Name: deepwn.com
-        Type: A (Host Address) (1)
-        Class: IN (0x0001)
-        Time to live: 35
-        Data length: 4
-        Address: 185.199.109.153
+            Time to live: 35
+            Data length: 4
+            Address: 185.199.110.153
+        deepwn.com: type A, class IN, addr 185.199.108.153
+            Name: deepwn.com
+            Type: A (Host Address) (1)
+            Class: IN (0x0001)
+            Time to live: 35
+            Data length: 4
+            Address: 185.199.108.153
+        deepwn.com: type A, class IN, addr 185.199.111.153
+            Name: deepwn.com
+            Type: A (Host Address) (1)
+            Class: IN (0x0001)
+            Time to live: 35
+            Data length: 4
+            Address: 185.199.111.153
+        deepwn.com: type A, class IN, addr 185.199.109.153
+            Name: deepwn.com
+            Type: A (Host Address) (1)
+            Class: IN (0x0001)
+            Time to live: 35
+            Data length: 4
+            Address: 185.199.109.153
 
 ```
 

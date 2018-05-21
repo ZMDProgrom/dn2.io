@@ -1,5 +1,13 @@
 # DNS protocol
 
+Create this document for learning how DNS protocol worked.
+
+Try use it do build a Security Data Transportation Framework & Pentesting with SCA or Steganography.
+
+If you have an idea to share or found some wrang words, Please open issues or PR this document. thx.
+
+last writed by evil7@deepwn on 2018-05-21
+
 ## The UDP Package
 
 ```text
@@ -55,7 +63,7 @@
                                |   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
                                |
                                |
-                               +--> # Types
+                               +--> # Types list
                                    +-----------+-------+-------------------------------------------+
                                    |  (Q)TYPE  | Value |                 Meaning                   |
                                    +-----------+-------+-------------------------------------------+
@@ -227,7 +235,40 @@
                                    |-----------|-------|-------------------------------------------|
                                    |  Reserved | 65535 |                                           |
                                    +-----------+-------+-------------------------------------------+
-
+                                   
+                                   
+                                    # Classes list
+                                   +-----------+-------+-------------------------------------------+
+                                   | (Q)Class  | Value |                 Meaning                   |
+                                   |-----------|-------|-------------------------------------------|
+                                   |  Reserved |   0   |                                           |
+                                   |-----------|-------|-------------------------------------------|
+                                   |     IN    |   1   |                                           |
+                                   |-----------|-------|-------------------------------------------|
+                                   |   (null)  |   2   |                                           |
+                                   |-----------|-------|-------------------------------------------|
+                                   |     CH    |   3   |                                           |
+                                   |-----------|-------|-------------------------------------------|
+                                   |     HS    |   4   |                                           |
+                                   |-----------|-------|-------------------------------------------|
+                                   |      5 -- 127     |             unassigned classes            |
+                                   |-----------|-------|-------------------------------------------|
+                                   |     128 -- 253    |             unassigned Qclasses           |
+                                   |-----------|-------|-------------------------------------------|
+                                   |    NONE   |  254  |                                           |
+                                   |-----------|-------|-------------------------------------------|
+                                   |      *    |  255  |                                           |
+                                   |-----------|-------|-------------------------------------------|
+                                   |    256 -- 32767   |                  unassigned               |
+                                   |-----------|-------|-------------------------------------------|
+                                   |   32768 -- 57343  |                  unassigned               |
+                                   |-----------|-------|-------------------------------------------|
+                                   |   57344 -- 65279  |    unassigned Qclasses and METAclasses    |
+                                   |-----------|-------|-------------------------------------------|
+                                   |   65280 -- 65534  |                  Private use              |
+                                   |-----------|-------|-------------------------------------------|
+                                   |  Reserved | 65535 |                                           |
+                                   +-----------+-------+-------------------------------------------+
 ```
 
 **A Package must & maybe only have `Header+Question(s)` in the package.**
@@ -442,3 +483,17 @@ Domain Name System (response)
         Address: 185.199.109.153
 
 ```
+
+## Reference
+
+<https://tools.ietf.org/html/rfc1035> RFC1035: DOMAIN NAMES - IMPLEMENTATION AND SPECIFICATION (about DNS protocol)
+
+<https://tools.ietf.org/html/rfc1034> RFC1034: DOMAIN NAMES - CONCEPTS AND FACILITIES (about data trans)
+
+<http://www.cnblogs.com/dongkuo/p/6714071.html> -- DNS协议介绍 (blog in chinese)
+
+<https://jocent.me/2017/06/25/dns-protocol-implementation.html> -- 自己动手实现DNS协议 (blog in chinese)
+
+<https://github.com/iriscouch/dnsd/blob/master/constants.js#L113> -- From "dnsd Project" part of "Types"
+
+<https://github.com/iriscouch/dnsd/blob/master/constants.js#L81> -- From "dnsd Project" part of "Classes"

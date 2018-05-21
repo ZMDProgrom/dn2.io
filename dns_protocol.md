@@ -31,7 +31,7 @@ last written by evil7@deepwn at 2018-05-21
                            |   +--> # Question(s): every one of data need include this
                            |       | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11| 12| 13| 14| 15|
                            |       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-                           |       |                                                               |     { Unkown length, end with "0x00".
+                           |       |                                                               |     { Unkown length, length >= 1byte & end with "0x00".
                            |       /                             QNAME...                          / --> { split with "." and join a length of every value at first.
                            |       /                                                               /     { E.g. (deepwn.com) => 0x06,('deepwn' to hex),0x03,('com' to hex),0x00
                            |       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
@@ -50,9 +50,10 @@ last written by evil7@deepwn at 2018-05-21
                                    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
                                    |                              TYPE                             | --> 16 bit, Same like the QTYPE
                                    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-                                   |                              CLASS                            | --> 16 bit, Same with QCLASS
+                                   |                             CLASS                             | --> 16 bit, Same with QCLASS
                                    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-                                   |                               TTL                             | --> 32 bit, for Time live
+                                   |                                                               |
+                                   +                              TTL                              + --> 32 bit, for Time live
                                    |                                                               |
                                    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
                                    |                            RDLENGTH                           | --> 16 bit, RDATA length
@@ -66,7 +67,7 @@ last written by evil7@deepwn at 2018-05-21
 ## Types & Classes
 
 ```
-                                         # Types list
+     # Types list
     +-----------+-------+-------------------------------------------+
     |  (Q)TYPE  | Value |                 Meaning                   |
     +-----------+-------+-------------------------------------------+
@@ -492,6 +493,8 @@ Domain Name System (response)
 <https://tools.ietf.org/html/rfc1035> RFC1035: DOMAIN NAMES - IMPLEMENTATION AND SPECIFICATION (about DNS protocol)
 
 <https://tools.ietf.org/html/rfc1034> RFC1034: DOMAIN NAMES - CONCEPTS AND FACILITIES (about data trans)
+
+<https://en.wikipedia.org/wiki/Domain_Name_System> Wiki - Domain_Name_System (full informations)
 
 <http://www.cnblogs.com/dongkuo/p/6714071.html> -- DNS协议介绍 (blog in chinese)
 

@@ -15,14 +15,14 @@ last written by evil7@deepwn at 2018-05-21
   DNS(UDP Package)             |   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11| 12| 13| 14| 15|
 +------------------+           |   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+                                  {  QR: (1 bit) 0=REQ / 1=RES;
 |      Header      |  ---------+   |                               ID                              | --> 16 bit, Auto ID from Sender  {  OPCODE: (4 bit) 0=default / 1=trackback / 2=SRVstatus / 3~15=NONE;
-+------------------+               +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+                                  {  AA: (1 bit) Authoritative Answer (bool=0x00|0x01);
-|    Question(s)   |  ---------+   | QR|     OPCODE    | AA| TC| RD| RA|     Z     |     RCODE     | --- 16 bit --------------------> {  TC: (1 bit) TrunCation (bool=0x00|0x01);
-+------------------+           |   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+                                  {  RD: (1 bit) Recursion Desired (bool=0x00|0x01);
-|   Answer (RRs)   |  -----+   |   |                            QDCOUNT                            | --> 16 bit, RRs in Question(s)   {  RA: (1 bit) Recursion Available (bool=0x00|0x01)
-+------------------+       |   |   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+                                  {  Z: (3 bit) NONE (use 0x00,0x00,0x00)
-| Autherity (RRs)  |  -----+   |   |                            ANCOUNT                            | --> 16 bit, RRs in Answer        {  RCODE: (4 bit) { 0=No_error_condition / 1=Format_error / 2=Server_failure
-+------------------+       |   |   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+                                                    { 3=Name_Error / 4=Not_Implemented / 5=Refused / 6~15=NONE
-| Additional (RRs) |  -----+   |   |                            NSCOUNT                            | --> 16 bit, RRs in Authority
++------------------+               +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+                                  {  AA: (1 bit) Authoritative Answer (bool=0||1);
+|    Question(s)   |  ---------+   | QR|     OPCODE    | AA| TC| RD| RA|     Z     |     RCODE     | --- 16 bit --------------------> {  TC: (1 bit) TrunCation (bool=0||1);
++------------------+           |   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+                                  {  RD: (1 bit) Recursion Desired (bool=0||1);
+|   Answer (RRs)   |  -----+   |   |                            QDCOUNT                            | --> 16 bit, RRs in Question(s)   {  RA: (1 bit) Recursion Available (bool=0||1)
++------------------+       |   |   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+                                  {  Z: (3 bit) NONE (use 000)
+| Autherity (RRs)  |  -----+   |   |                            ANCOUNT                            | --> 16 bit, RRs in Answer        {  RCODE: (4 bit) --> { 0=No_error_condition / 1=Format_error / 2=Server_failure
++------------------+       |   |   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+                                                        { 3=Name_Error / 4=Not_Implemented / 5=Refused / 6~15=NONE
+| Additional (RRs) |  -----+   |   |                            NSCOUNT                            | --> 16 bit, RRs in Authority                           ( need trans from DEC to BIN for this 4 bit)
 +------------------+       |   |   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
                            |   |   |                            ARCOUNT                            | --> 16 bit, RRs in Additional
                            |   |   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
@@ -33,7 +33,7 @@ last written by evil7@deepwn at 2018-05-21
                            |       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
                            |       |                                                               |     { Unkown length, length >= 2byte & end with "0x00".
                            |       /                             QNAME...                          / --> { split with "." and join a length of every value at first.
-                           |       /                                                               /     { E.g. (deepwn.com) => 0x06,('deepwn' to hex),0x03,('com' to hex),0x00
+                           |       /                                                               /     { E.g. (deepwn.com) => 0x06,('deepwn' to HEX),0x03,('com' to HEX),0x00
                            |       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
                            |       |                             QTYPE                             | --> 16 bit, RRs type
                            |       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
